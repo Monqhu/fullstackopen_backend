@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const morgan = require('morgan')
 app.use(express.json())//Convierte los datos del objeto 'request' a javascript y los inserta en el body, para que se puedan leer dentro de un controlador
 
 let persons = [
@@ -61,6 +62,17 @@ app.delete('/api/persons/:id', (request, response) => {
 
   response.status(204).end()
 })
+
+//MIDDLEWARE MORGAN
+//token personalizado
+morgan.token('content', function getContent(req){
+  const name = req.body.name
+  const number = req.body.number
+  return JSON.stringify({name, number})
+})
+//Este ejemplo lo saqué con la ayuda de la documentación de morgan y de Roberto
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :content'))
+
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
