@@ -1,38 +1,46 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 app.use(express.json())//Convierte los datos del objeto 'request' a javascript y los inserta en el body, para que se puedan leer dentro de un controlador
+const Person = require('./models/person')
 
-let persons = [
-  { 
-    "id": "1",
-    "name": "Arto Hellas", 
-    "number": "040-123456"
-  },
-  { 
-    "id": "2",
-    "name": "Ada Lovelace", 
-    "number": "39-44-5323523"
-  },
-  { 
-    "id": "3",
-    "name": "Dan Abramov", 
-    "number": "12-43-234345"
-  },
-  { 
-    "id": "4",
-    "name": "Mary Poppendieck", 
-    "number": "39-23-6423122"
-  }
-]
 
+
+
+/*
+  let persons = [
+    { 
+      "id": "1",
+      "name": "Arto Hellas", 
+      "number": "040-123456"
+    },
+    { 
+      "id": "2",
+      "name": "Ada Lovelace", 
+      "number": "39-44-5323523"
+    },
+    { 
+      "id": "3",
+      "name": "Dan Abramov", 
+      "number": "12-43-234345"
+    },
+    { 
+      "id": "4",
+      "name": "Mary Poppendieck", 
+      "number": "39-23-6423122"
+    }
+  ]
+*/
 
 app.get('/', (request, response) => {
   response.send('<h1>Agenda telefónica</h1>')
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons)
+  })
 })
 
 app.get('/info', (request, response) => {
@@ -80,20 +88,22 @@ app.post('/api/persons', (request, response) => {
   if(!body.name || !body.number){
     return response.status(400).json({error: "Falta información en el body"})
   }else{
-    const check = persons.find(p => p.name === body.name)//Revisamos si ya existe un usuario con ese nombre
-    if(!check){
-      const person = {
-        id: generateId(),
-        name: body.name,
-        number: body.number
-      }
-      persons = persons.concat(person)
-      response.json(person)
-    }else{
-      return response.status(400).json({error: "Nombre duplicado, elija otro."})
-    }
-  }
 
+    //Revisamos si ya existe un usuario con ese nombre
+    //const check = persons.find(p => p.name === body.name)
+
+    //creamos el nuevo objeto 'person'
+    const person = new Person({
+      name: body.name,
+      number: body.number,
+      id: generateId()
+    })
+
+    //Guardamos el objeto 'person' recien creado
+    person.save().then(savedPerson => {
+      return response.status(201).json(savedPerson)
+    })
+  }
 })
 
 
@@ -106,7 +116,8 @@ const generateId = () => {
 
 
 
-const PORT = process.env.PORT || 3001
+
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })

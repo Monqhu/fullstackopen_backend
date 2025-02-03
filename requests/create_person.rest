@@ -2,6 +2,6 @@ POST http://localhost:3001/api/persons HTTP/1.1
 content-type: application/json
 
 {
-  "name": "bowa'oh wa'ha",
-  "number": "365-pirate-arr"
+  "name": "Ar dyablo papadio",
+  "number": "666"
 }
